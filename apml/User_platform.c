@@ -118,7 +118,6 @@ jurisdiction and venue of these courts.
 //#include "hal_hw.h"
 //#include "IPMIConf.h"
 #include "Apml_fdk.h"
-#include "kunlun_lib/smbus.h"
 
 /* Holds i2c bus name string */
 static char m_i2c_bus_name [64];
@@ -203,7 +202,7 @@ uint32 user_platform_init(APML_DEV_CTL *dev,int BMCInst)
 	uint32 j;
 #endif
     if(0){
-		BMCInst = BMCInst；
+		BMCInst = BMCInst;
 	}
 	USER_PLATFORM_DATA	*platform;
 	//BMCInfo_t* pBMCInfo = &g_BMCInfo[BMCInst];
@@ -342,7 +341,8 @@ uint32 user_smbus_write_byte(
     	dev=dev; /* -Wextra, fix for unused parameters */
     	data=data;
     }
-    if(g_HALI2CHandle[HAL_I2C_MW] != NULL)
+    //if(g_HALI2CHandle[HAL_I2C_MW] != NULL)
+	if(1)
     {
         for (retries = 0; retries < MAX_I2C_RETRIES; ++retries)
         {
@@ -389,7 +389,8 @@ uint32 user_smbus_write_word(
     {
     	dev=dev; /* -Wextra, fix for unused parameters */
     }
-    if(g_HALI2CHandle[HAL_I2C_MW] != NULL)
+    //if(g_HALI2CHandle[HAL_I2C_MW] != NULL)
+	if(1)
     {
         for (retries = 0; retries < MAX_I2C_RETRIES; ++retries)
         {
@@ -433,7 +434,8 @@ uint32 user_smbus_read_byte(
     {
     	dev=dev; /* -Wextra, fix for unused parameters */
     }
-    if(g_HALI2CHandle[HAL_I2C_RW] != NULL)
+    //if(g_HALI2CHandle[HAL_I2C_RW] != NULL)
+	if(1)
     {
         for (retries = 0; retries < MAX_I2C_RETRIES; ++retries)
         {
@@ -478,13 +480,14 @@ uint32 user_smbus_read_word(
     {
     	dev=dev; /* -Wextra, fix for unused parameters */
     }
-    if(g_HALI2CHandle[HAL_I2C_RW] != NULL)
+    //if(g_HALI2CHandle[HAL_I2C_RW] != NULL)
+	if(1)
     {
         for (retries = 0; retries < MAX_I2C_RETRIES; ++retries)
         {
              //uerr = ((int(*)(char *,u8,u8 *,u8 *,size_t,size_t))g_HALI2CHandle[HAL_I2C_RW]) (get_i2c_bus_name((int)pBMCInfo->IpmiConfig.APMLBusNumber),
              //                                   proc_addr, (uint8*) &reg, (uint8*)data,sizeof(uint8), sizeof(uint16));
-             uerr = apml_smbus_read_byte(get_i2c_bus_name(0),proc_addr, &reg, (uint8 *) data, wr_len, rd_len);
+             uerr = apml_smbus_read_byte(get_i2c_bus_name(0),proc_addr, &reg, (uint8 *) data, sizeof(uint8), sizeof(uint16));
             if(uerr >= 0){
                 break;
             }
@@ -528,7 +531,8 @@ uint32 user_smbus_bwr_brd_process(
     {
     	dev=dev; /* -Wextra, fix for unused parameters */
     }
-    if(g_HALI2CHandle[HAL_I2C_RW] != NULL)
+    //if(g_HALI2CHandle[HAL_I2C_RW] != NULL)
+	if(1)
     {
         for (retries = 0; retries < MAX_I2C_RETRIES; ++retries)
         {
