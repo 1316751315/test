@@ -16,11 +16,12 @@
 #include <linux/i2c.h>
 #include <linux/i2c-dev.h>
 
+#include "coreTypes.h"
 
-int32 apml_smbus_write_data(char *busname, int32 addr, int8 *reg, int8 len)
+
+uint32 apml_smbus_write_data(char *busname, uint32 addr, uint8 *reg, uint8 len)
 {
 	int fd = -1, ret = -1;
-	unsigned int i=0;
 	struct i2c_msg msgs;
 	struct i2c_rdwr_ioctl_data packets;
 	
@@ -48,17 +49,21 @@ end:
 
 
 
-int32 apml_smbus_read_byte(char *busname, int32 addr, int8 *reg, int8 *data, int8 wlen, int8 rlen)
+uint32 apml_smbus_read_byte(char *busname, uint32 addr, uint8 *reg, uint8 *data, uint8 wlen, uint8 rlen)
 {
 	struct i2c_msg msgs[2];
 	struct i2c_rdwr_ioctl_data packets;
-
+	
+	int fd = open(busname, O_RDWR)
+	if(fd < 0){
+		goto end;
+	}
 	packets.nmsgs = 2;
 	packets.msgs = msgs;
 
 	msgs[0].addr = addr;
 	msgs[0].flags = 0;
-	msgs[0].len = wlen;       
+	msgs[0].len = wlen;  
 	msgs[0].buf = reg;
 
 	msgs[1].addr = addr;
@@ -66,11 +71,12 @@ int32 apml_smbus_read_byte(char *busname, int32 addr, int8 *reg, int8 *data, int
 	msgs[1].len = rlen;       
 	msgs[1].buf = data;
 	
-	int ret = ioctl(busFd, I2C_RDWR, &packets);
+	int ret = ioctl(fd, I2C_RDWR, &packets);
 	if (ret < 0)
 	{
 		goto end;
 	}
+	close(fd);
 end:
     return ret;
 	
