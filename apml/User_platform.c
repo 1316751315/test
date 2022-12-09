@@ -112,12 +112,13 @@ jurisdiction and venue of these courts.
 #include <stdio.h>
 #include <unistd.h>
 
-
+#include "Apml_smbus.h"
 //#include "i2c-dev.h"
 //#include "libi2c.h"
 //#include "hal_hw.h"
 //#include "IPMIConf.h"
 #include "Apml_fdk.h"
+#include "kunlun_lib/smbus.h"
 
 /* Holds i2c bus name string */
 static char m_i2c_bus_name [64];
@@ -201,15 +202,19 @@ uint32 user_platform_init(APML_DEV_CTL *dev,int BMCInst)
 #ifndef CONFIG_SPX_FEATURE_APML_ONLY_TSI_SUPPORT
 	uint32 j;
 #endif
+    if(0){
+		BMCInst = BMCInst；
+	}
 	USER_PLATFORM_DATA	*platform;
-	BMCInfo_t* pBMCInfo = &g_BMCInfo[BMCInst];
+	//BMCInfo_t* pBMCInfo = &g_BMCInfo[BMCInst];
 
 	platform = &dev->platform;
 	/* Initialize platform structure */
 	for (i=0; i < APML_MAX_PROCS; i++)
 		platform->addr[i] = rmi_addr_lst[i];
 	platform->last_addr_val = 0;
-	platform->apml_smbus_number = pBMCInfo->IpmiConfig.APMLBusNumber;
+	//platform->apml_smbus_number = pBMCInfo->IpmiConfig.APMLBusNumber;
+	platform->apml_smbus_number = 0;
 
 #ifdef CONFIG_SPX_FEATURE_APML_ONLY_TSI_SUPPORT
 	//j=0;
@@ -330,7 +335,7 @@ uint32 user_smbus_write_byte(
     uint32	res = APML_SUCCESS;
     uint8	retries = 0, wr_len=sizeof(uint8);
     int32	uerr;
-    BMCInfo_t* pBMCInfo = &g_BMCInfo[BMCInst];
+    //BMCInfo_t* pBMCInfo = &g_BMCInfo[BMCInst];
 
     if(0)
     {
@@ -341,8 +346,8 @@ uint32 user_smbus_write_byte(
     {
         for (retries = 0; retries < MAX_I2C_RETRIES; ++retries)
         {
-            uerr = ((ssize_t(*)(char *,u8,u8 *,size_t))g_HALI2CHandle[HAL_I2C_MW]) (get_i2c_bus_name((int)pBMCInfo->IpmiConfig.APMLBusNumber), proc_addr, (uint8*) &reg, wr_len);
-             
+            //uerr = ((ssize_t(*)(char *,u8,u8 *,size_t))g_HALI2CHandle[HAL_I2C_MW]) (get_i2c_bus_name((int)pBMCInfo->IpmiConfig.APMLBusNumber), proc_addr, (uint8*) &reg, wr_len);
+            uerr = apml_smbus_write_data(get_i2c_bus_name(0), proc_addr, (uint8*) &reg, wr_len);
             if(uerr >= 0){
                 break;
             }
@@ -378,7 +383,7 @@ uint32 user_smbus_write_word(
     writeBuf[1] = data;
     int32   uerr;
     uint8	retries = 0, wr_len=sizeof(writeBuf);
-    BMCInfo_t* pBMCInfo = &g_BMCInfo[BMCInst];
+    //BMCInfo_t* pBMCInfo = &g_BMCInfo[BMCInst];
 
     if(0)
     {
@@ -388,8 +393,8 @@ uint32 user_smbus_write_word(
     {
         for (retries = 0; retries < MAX_I2C_RETRIES; ++retries)
         {
-            uerr = ((ssize_t(*)(char *,u8,u8 *,size_t))g_HALI2CHandle[HAL_I2C_MW]) (get_i2c_bus_name((int)pBMCInfo->IpmiConfig.APMLBusNumber), proc_addr, (uint8*) &writeBuf[0], wr_len);
-             
+            //uerr = ((ssize_t(*)(char *,u8,u8 *,size_t))g_HALI2CHandle[HAL_I2C_MW]) (get_i2c_bus_name((int)pBMCInfo->IpmiConfig.APMLBusNumber), proc_addr, (uint8*) &writeBuf[0], wr_len);
+            uerr = apml_smbus_write_data(get_i2c_bus_name(0), proc_addr, (uint8*) &writeBuf[0], wr_len);
             if(uerr >= 0){
                 break;
             }
@@ -422,7 +427,7 @@ uint32 user_smbus_read_byte(
     uint8 retries = 0;
     uint8	wr_len, rd_len;
     wr_len = rd_len = sizeof(uint8);
-    BMCInfo_t* pBMCInfo = &g_BMCInfo[BMCInst];
+    //BMCInfo_t* pBMCInfo = &g_BMCInfo[BMCInst];
 
     if(0)
     {
@@ -432,8 +437,9 @@ uint32 user_smbus_read_byte(
     {
         for (retries = 0; retries < MAX_I2C_RETRIES; ++retries)
         {
-                 uerr = ((int(*)(char *,u8,u8 *,u8 *,size_t,size_t))g_HALI2CHandle[HAL_I2C_RW]) (get_i2c_bus_name((int)pBMCInfo->IpmiConfig.APMLBusNumber),
-                                                        proc_addr, (uint8*) &reg, (uint8 *) data, wr_len, rd_len);
+                 //uerr = ((int(*)(char *,u8,u8 *,u8 *,size_t,size_t))g_HALI2CHandle[HAL_I2C_RW]) (get_i2c_bus_name((int)pBMCInfo->IpmiConfig.APMLBusNumber),
+                 //                                      proc_addr, (uint8*) &reg, (uint8 *) data, wr_len, rd_len);
+				 uerr = apml_smbus_read_byte(get_i2c_bus_name(0),proc_addr, &reg, (uint8 *) data, wr_len, rd_len);
                 if(uerr >= 0){
                     break;
                 }
@@ -466,7 +472,7 @@ uint32 user_smbus_read_word(
     uint32	res = APML_SUCCESS;
     int32	uerr;
     uint8 retries = 0;
-    BMCInfo_t* pBMCInfo = &g_BMCInfo[BMCInst];
+    //BMCInfo_t* pBMCInfo = &g_BMCInfo[BMCInst];
 
     if(0)
     {
@@ -476,9 +482,9 @@ uint32 user_smbus_read_word(
     {
         for (retries = 0; retries < MAX_I2C_RETRIES; ++retries)
         {
-             uerr = ((int(*)(char *,u8,u8 *,u8 *,size_t,size_t))g_HALI2CHandle[HAL_I2C_RW]) (get_i2c_bus_name((int)pBMCInfo->IpmiConfig.APMLBusNumber),
-                                                proc_addr, (uint8*) &reg, (uint8*)data,sizeof(uint8), sizeof(uint16));
-             
+             //uerr = ((int(*)(char *,u8,u8 *,u8 *,size_t,size_t))g_HALI2CHandle[HAL_I2C_RW]) (get_i2c_bus_name((int)pBMCInfo->IpmiConfig.APMLBusNumber),
+             //                                   proc_addr, (uint8*) &reg, (uint8*)data,sizeof(uint8), sizeof(uint16));
+             uerr = apml_smbus_read_byte(get_i2c_bus_name(0),proc_addr, &reg, (uint8 *) data, wr_len, rd_len);
             if(uerr >= 0){
                 break;
             }
@@ -516,7 +522,7 @@ uint32 user_smbus_bwr_brd_process(
     int32	uerr;
     uint32	res= APML_SUCCESS;
     uint8 retries = 0;
-    BMCInfo_t* pBMCInfo = &g_BMCInfo[BMCInst];
+    //BMCInfo_t* pBMCInfo = &g_BMCInfo[BMCInst];
 
     if(0)
     {
@@ -526,9 +532,9 @@ uint32 user_smbus_bwr_brd_process(
     {
         for (retries = 0; retries < MAX_I2C_RETRIES; ++retries)
         {
-            uerr = ((int(*)(char *,u8,u8 *,u8 *,size_t,size_t))g_HALI2CHandle[HAL_I2C_RW]) (get_i2c_bus_name((int)pBMCInfo->IpmiConfig.APMLBusNumber),
-                        proc_addr, xmt_data, rcv_data, xmt_len, rcv_len);
-             
+            //uerr = ((int(*)(char *,u8,u8 *,u8 *,size_t,size_t))g_HALI2CHandle[HAL_I2C_RW]) (get_i2c_bus_name((int)pBMCInfo->IpmiConfig.APMLBusNumber),
+            //            proc_addr, xmt_data, rcv_data, xmt_len, rcv_len);
+            uerr = apml_smbus_read_byte(get_i2c_bus_name(0),proc_addr, xmt_data, rcv_data, xmt_len, rcv_len);
             if(uerr >= 0){
                 break;
             }
