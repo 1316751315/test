@@ -28,7 +28,7 @@ uint32 apml_smbus_write_data(char *busname, uint32 addr, uint8 *reg, uint8 len)
 	packets.nmsgs = 1;
 	packets.msgs = &msgs;
 
-	fd = open(busname, O_RDWR)
+	fd = open(busname, O_RDWR);
 	if(fd < 0){
 		goto end;
 	}
@@ -54,7 +54,7 @@ uint32 apml_smbus_read_byte(char *busname, uint32 addr, uint8 *reg, uint8 *data,
 	struct i2c_msg msgs[2];
 	struct i2c_rdwr_ioctl_data packets;
 	
-	int fd = open(busname, O_RDWR)
+	int fd = open(busname, O_RDWR);
 	if(fd < 0){
 		goto end;
 	}

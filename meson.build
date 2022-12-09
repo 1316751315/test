@@ -21,8 +21,8 @@ incdir = include_directories(
 # Include source file
 radius_auth_src = files(
     'apml/Apml_fdk.c',
-    'apml/User_platform.c'
-    'apml/Apml_smbus.c'
+    'apml/User_platform.c',
+    'apml/Apml_smbus.c
 )
 
 # Make dynamic library
