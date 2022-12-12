@@ -1388,7 +1388,12 @@ uint32 apml_block_process_call(
 
 		if (res != APML_SUCCESS)
 			return(res);
-
+		printf("rd_data[0]=%d rd_data[1]=%d rd_len=%d reg=0x%x\n",rd_data[0],rd_data[1],rd_len,proc_addr);
+		for(int j=0;j<rd_len;j++)
+		{
+			printf("0x%x\t",rd_data[j]);
+		}
+		printf("\n");
 		if (rd_data[0] != (rd_len-1))
 		{
 			if (rd_data[0] == 1) {

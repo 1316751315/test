@@ -53,9 +53,11 @@ uint32 apml_smbus_read_byte(char *busname, uint32 addr, uint8 *reg, uint8 *data,
 {
 	struct i2c_msg msgs[2];
 	struct i2c_rdwr_ioctl_data packets;
-	
+	printf("busname=%s  addr=0x%x reg=0x%x\n",busname,addr,*reg);
+	int ret = -1;
 	int fd = open(busname, O_RDWR);
 	if(fd < 0){
+		printf("open error!\n");
 		goto end;
 	}
 	packets.nmsgs = 2;
@@ -71,9 +73,10 @@ uint32 apml_smbus_read_byte(char *busname, uint32 addr, uint8 *reg, uint8 *data,
 	msgs[1].len = rlen;       
 	msgs[1].buf = data;
 	
-	int ret = ioctl(fd, I2C_RDWR, &packets);
+	ret = ioctl(fd, I2C_RDWR, &packets);
 	if (ret < 0)
 	{
+		printf("ioctl error!\n");
 		goto end;
 	}
 	close(fd);

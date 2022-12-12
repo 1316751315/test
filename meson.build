@@ -19,7 +19,7 @@ incdir = include_directories(
 
 
 # Include source file
-radius_auth_src = files(
+apml_src = files(
     'apml/Apml_fdk.c',
     'apml/User_platform.c',
     'apml/Apml_smbus.c
@@ -28,7 +28,7 @@ radius_auth_src = files(
 # Make dynamic library
 shared_library( 
     'openapml', 
-    radius_auth_src ,
+    apml_src ,
     #dependencies : apml_dependencies,
     include_directories : incdir,
     #name_prefix : '',
@@ -36,3 +36,14 @@ shared_library(
     #install_dir : '/lib/security'
 )
 
+test_src = files(
+    'apml/Apml_fdk.c',
+    'apml/User_platform.c',
+    'apml/Apml_smbus.c',
+    'apml/test.c'
+)
+executable(
+    'apml-test',
+    test_src,
+    include_directories : incdir
+)
