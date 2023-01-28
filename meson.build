@@ -22,7 +22,7 @@ incdir = include_directories(
 apml_src = files(
     'apml/Apml_fdk.c',
     'apml/User_platform.c',
-    'apml/Apml_smbus.c
+    'apml/Apml_smbus.c'
 )
 
 # Make dynamic library

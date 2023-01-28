@@ -247,7 +247,7 @@ uint32 apml_init_fdk(APML_DEV_CTL *ctl,int BMCInst)
 	ctl->stat.bytes_xmtd         = 0;
 	ctl->stat.bytes_rcvd         = 0;
 
-
+	ctl->trace_level = APML_TRACE_ON;
 	res = user_platform_init(ctl,BMCInst);
 	ctl->initialized = 1;
 
@@ -1378,7 +1378,6 @@ uint32 apml_block_process_call(
 	uint8	crc, addr;
 	uint32	res, i;
 
-
 	dev->stat.cmd_cnt++;
 
 	for (i=0 ; i < APML_CMD_RETRIES ; i++)
@@ -1388,12 +1387,14 @@ uint32 apml_block_process_call(
 
 		if (res != APML_SUCCESS)
 			return(res);
+		#if 0
 		printf("rd_data[0]=%d rd_data[1]=%d rd_len=%d reg=0x%x\n",rd_data[0],rd_data[1],rd_len,proc_addr);
 		for(int j=0;j<rd_len;j++)
 		{
 			printf("0x%x\t",rd_data[j]);
 		}
 		printf("\n");
+		#endif
 		if (rd_data[0] != (rd_len-1))
 		{
 			if (rd_data[0] == 1) {

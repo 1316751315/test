@@ -134,7 +134,7 @@ char*
 get_i2c_bus_name (int bus_num)
 {
    /* Conver Bus number into corresponding i2c device */
-   sprintf(m_i2c_bus_name,"/dev/i2c%d", bus_num);
+   sprintf(m_i2c_bus_name,"/dev/i2c-%d", bus_num);
 
    return &m_i2c_bus_name[0];
 }
@@ -245,9 +245,9 @@ uint32 user_platform_init(APML_DEV_CTL *dev,int BMCInst)
 		res = apml_read_rmi_reg(dev, i, 0, 0x00, &tmp8,BMCInst);
 		if (res == APML_SUCCESS) {
 			dev->rmi_rev[i] = tmp8;
-
+			printf("Read the APML version dev->rmi_rev[%d] is %d\n",i,tmp8);
 			/* This FDK only understands 0x02 (version 1.0)& 0x03 (version 1.1) */
-			if ( !( tmp8 == 0x03 ||tmp8 == 0x02 || tmp8 == 0x01) ) {
+			if ( !( tmp8 == 0x03 ||tmp8 == 0x02 || tmp8 == 0x01 || tmp8 == 0x10) ) {
 				return(APML_BAD_RMI_VERSION);
 			}
 
@@ -255,18 +255,18 @@ uint32 user_platform_init(APML_DEV_CTL *dev,int BMCInst)
 			res = apml_write_rmi_reg(dev, i, PROC_USE_TSI,
 				0x22, 0x80,BMCInst);
 			if (res == APML_SUCCESS) {
-
+				//printf("Enable TSI SMBus timeouts\n");
 				/* Turn on all APML PEC */
 				tmp8 = 0xE1;
 				res = apml_write_rmi_reg(dev, i, 0, 0x01, tmp8,BMCInst);
 				if (res == APML_SUCCESS) {
-
+					//printf("Turn on all APML PEC \n");
 					/* Read core enabled status 0-7 */
 					res = apml_read_rmi_reg(dev, i, 0,
 						0x04, &tmp8,BMCInst);
 
 					if (res == APML_SUCCESS) {
-
+						//printf("Read core enabled status 0-7 tmp8:0x%x\n",tmp8);
 						/* Store # of cores */
 						for (j=1; j < 256; j = j * 2) {
 							if ((tmp8 & j) == j) {
@@ -277,7 +277,7 @@ uint32 user_platform_init(APML_DEV_CTL *dev,int BMCInst)
 						/* Read core enabled status 8-15 */
 						res = apml_read_rmi_reg(dev, i, 0, 0x05, &tmp8,BMCInst);
 						if (res == APML_SUCCESS) {
-
+							//printf("Read core enabled status 8-15 tmp8:0x%x\n",tmp8);
 							/* Store # of cores */
 							for (j=1; j < 256; j = j * 2) {
 								if ((tmp8 & j) == j) {
@@ -526,7 +526,6 @@ uint32 user_smbus_bwr_brd_process(
     uint32	res= APML_SUCCESS;
     uint8 retries = 0;
     //BMCInfo_t* pBMCInfo = &g_BMCInfo[BMCInst];
-
     if(0)
     {
     	dev=dev; /* -Wextra, fix for unused parameters */
