@@ -123,6 +123,7 @@ jurisdiction and venue of these courts.
 static char m_i2c_bus_name [64];
 
 #define MAX_I2C_RETRIES 3
+//#define CONFIG_SPX_FEATURE_APML_ONLY_TSI_SUPPORT
 
 
 /**

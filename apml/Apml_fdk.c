@@ -606,6 +606,7 @@ uint32 apml_read_max_pstate(
 
 
 	res = apml_read_rmi_msr(ctl, proc_addr, ctl->rmi_core_target, cmd_id, 
+	//res = apml_read_rmi_msr(ctl, proc_addr, 6, cmd_id, 
 		reg_id, &reg_val_h, &reg_val_l,BMCInst);
 
 	if (res == APML_SUCCESS)
@@ -717,7 +718,7 @@ uint32 apml_read_rmi_reg(
 		temp8 = temp32 & 0xff;
 		crc = apml_pec(crc, 1, &temp8);
 
-		if (crc == ((temp32 & 0xFF00) >> 8))
+		if (crc == ((temp32 & 0xFF00) >> 8)) 
 		{
 			break;
 		}
@@ -1387,14 +1388,7 @@ uint32 apml_block_process_call(
 
 		if (res != APML_SUCCESS)
 			return(res);
-		#if 0
-		printf("rd_data[0]=%d rd_data[1]=%d rd_len=%d reg=0x%x\n",rd_data[0],rd_data[1],rd_len,proc_addr);
-		for(int j=0;j<rd_len;j++)
-		{
-			printf("0x%x\t",rd_data[j]);
-		}
-		printf("\n");
-		#endif
+
 		if (rd_data[0] != (rd_len-1))
 		{
 			if (rd_data[0] == 1) {
@@ -1596,3 +1590,25 @@ uint32 apml_update_sar(
 
 
 
+uint32 apml_read_msr_value(
+	APML_DEV_CTL	*ctl,
+	uint8		proc,
+	uint32 		reg_id,
+	int			BMCInst)
+{
+	uint8		proc_addr;
+	uint32		res, reg_val_h, reg_val_l;
+	const CHAR	*cmd_id = "RMI READ MSR VALUE";
+
+
+	res = user_get_proc_addr(ctl, proc, 0, &proc_addr);
+	if (res != APML_SUCCESS)
+		return(res);
+	//proc_ndx = proc;
+
+
+	res = apml_read_rmi_msr(ctl, proc_addr, ctl->rmi_core_target, cmd_id, 
+		reg_id, &reg_val_h, &reg_val_l,BMCInst);
+
+	return(res);
+}

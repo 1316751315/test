@@ -461,6 +461,11 @@ extern uint32 apml_write_dram_throttle(
         uint8           bw_cap_cmd_throttle_mode,
         uint8           bw_cap_en,
         int			    BMCInst);
+extern uint32 apml_read_msr_value(
+	APML_DEV_CTL	*ctl,
+	uint8		proc,
+	uint32 		reg_id,
+	int			BMCInst);
 
 extern uint32 apml_init_fdk(APML_DEV_CTL *ctl,int BMCInst);
 
