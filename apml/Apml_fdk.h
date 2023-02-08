@@ -464,6 +464,8 @@ extern uint32 apml_write_dram_throttle(
 extern uint32 apml_read_msr_value(
 	APML_DEV_CTL	*ctl,
 	uint8		proc,
+	uint32*		reg_val_h,
+	uint32*		reg_val_l,
 	uint32 		reg_id,
 	int			BMCInst);
 

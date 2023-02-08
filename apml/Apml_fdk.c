@@ -1593,11 +1593,13 @@ uint32 apml_update_sar(
 uint32 apml_read_msr_value(
 	APML_DEV_CTL	*ctl,
 	uint8		proc,
+	uint32* 	reg_val_h,
+	uint32* 	reg_val_l,
 	uint32 		reg_id,
 	int			BMCInst)
 {
 	uint8		proc_addr;
-	uint32		res, reg_val_h, reg_val_l;
+	uint32		res;
 	const CHAR	*cmd_id = "RMI READ MSR VALUE";
 
 
@@ -1608,7 +1610,8 @@ uint32 apml_read_msr_value(
 
 
 	res = apml_read_rmi_msr(ctl, proc_addr, ctl->rmi_core_target, cmd_id, 
-		reg_id, &reg_val_h, &reg_val_l,BMCInst);
+		reg_id, reg_val_h, reg_val_l,BMCInst);
 
 	return(res);
 }
+

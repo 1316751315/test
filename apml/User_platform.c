@@ -348,7 +348,7 @@ uint32 user_smbus_write_byte(
         for (retries = 0; retries < MAX_I2C_RETRIES; ++retries)
         {
             //uerr = ((ssize_t(*)(char *,u8,u8 *,size_t))g_HALI2CHandle[HAL_I2C_MW]) (get_i2c_bus_name((int)pBMCInfo->IpmiConfig.APMLBusNumber), proc_addr, (uint8*) &reg, wr_len);
-            uerr = apml_smbus_write_data(get_i2c_bus_name(0), proc_addr, (uint8*) &reg, wr_len);
+            uerr = apml_smbus_write_data(get_i2c_bus_name(10), proc_addr, (uint8*) &reg, wr_len);
             if(uerr >= 0){
                 break;
             }
@@ -396,7 +396,7 @@ uint32 user_smbus_write_word(
         for (retries = 0; retries < MAX_I2C_RETRIES; ++retries)
         {
             //uerr = ((ssize_t(*)(char *,u8,u8 *,size_t))g_HALI2CHandle[HAL_I2C_MW]) (get_i2c_bus_name((int)pBMCInfo->IpmiConfig.APMLBusNumber), proc_addr, (uint8*) &writeBuf[0], wr_len);
-            uerr = apml_smbus_write_data(get_i2c_bus_name(0), proc_addr, (uint8*) &writeBuf[0], wr_len);
+            uerr = apml_smbus_write_data(get_i2c_bus_name(10), proc_addr, (uint8*) &writeBuf[0], wr_len);
             if(uerr >= 0){
                 break;
             }
@@ -442,7 +442,7 @@ uint32 user_smbus_read_byte(
         {
                  //uerr = ((int(*)(char *,u8,u8 *,u8 *,size_t,size_t))g_HALI2CHandle[HAL_I2C_RW]) (get_i2c_bus_name((int)pBMCInfo->IpmiConfig.APMLBusNumber),
                  //                                      proc_addr, (uint8*) &reg, (uint8 *) data, wr_len, rd_len);
-				 uerr = apml_smbus_read_byte(get_i2c_bus_name(0),proc_addr, (uint8*) &reg, (uint8 *) data, wr_len, rd_len);
+				 uerr = apml_smbus_read_byte(get_i2c_bus_name(10),proc_addr, (uint8*) &reg, (uint8 *) data, wr_len, rd_len);
                 if(uerr >= 0){
                     break;
                 }
@@ -488,7 +488,7 @@ uint32 user_smbus_read_word(
         {
              //uerr = ((int(*)(char *,u8,u8 *,u8 *,size_t,size_t))g_HALI2CHandle[HAL_I2C_RW]) (get_i2c_bus_name((int)pBMCInfo->IpmiConfig.APMLBusNumber),
              //                                   proc_addr, (uint8*) &reg, (uint8*)data,sizeof(uint8), sizeof(uint16));
-             uerr = apml_smbus_read_byte(get_i2c_bus_name(0),proc_addr, (uint8*) &reg, (uint8 *) data, sizeof(uint8), sizeof(uint16));
+             uerr = apml_smbus_read_byte(get_i2c_bus_name(10),proc_addr, (uint8*) &reg, (uint8 *) data, sizeof(uint8), sizeof(uint16));
             if(uerr >= 0){
                 break;
             }
@@ -538,7 +538,7 @@ uint32 user_smbus_bwr_brd_process(
         {
             //uerr = ((int(*)(char *,u8,u8 *,u8 *,size_t,size_t))g_HALI2CHandle[HAL_I2C_RW]) (get_i2c_bus_name((int)pBMCInfo->IpmiConfig.APMLBusNumber),
             //            proc_addr, xmt_data, rcv_data, xmt_len, rcv_len);
-            uerr = apml_smbus_read_byte(get_i2c_bus_name(0),proc_addr, xmt_data, rcv_data, xmt_len, rcv_len);
+            uerr = apml_smbus_read_byte(get_i2c_bus_name(10),proc_addr, xmt_data, rcv_data, xmt_len, rcv_len);
             if(uerr >= 0){
                 break;
             }
