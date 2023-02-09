@@ -4,6 +4,9 @@
         "*.tcc": "c",
         "fstream": "c",
         "sstream": "c",
-        "coretypes.h": "c"
+        "coretypes.h": "c",
+        "cstdlib": "c",
+        "stdlib.h": "c",
+        "unistd.h": "c"
     }
 }

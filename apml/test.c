@@ -1,10 +1,16 @@
-#include<stdio.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
 #include "coreTypes.h"
 #include "Apml_fdk.h"
 #include <time.h>
 #include <sys/stat.h>
-#define LINE_NUM 2000
+#define LINE_NUM 200
+
+#define APML_REG_LOG "/usr/log/apml-msr.log"
+void record_register_log(char * message);
+
 
 uint32 reg_list[]={0xc0002001,0xc0002002,0xc0002003,0xc0002011,0xc0002012,0xc0002013,0xc0002021,0xc0002022,0xc0002023,0xc0002031,0xc0002032,0xc0002033,0xc0002041, \
 0xc0002042,0xc0002043,0xc0002051,0xc0002052,0xc0002053,0xc0002061,0xc0002062,0xc0002063,0xc0002071,0xc0002072,0xc0002073,0xc0002081,0xc0002082,0xc0002083, \
@@ -18,6 +24,7 @@ uint32 reg_list[]={0xc0002001,0xc0002002,0xc0002003,0xc0002011,0xc0002012,0xc000
 0xc0002151,0xc0002152,0xc0002153,0xc0002161,0xc0002162,0xc0002163};
 //Core-specific read CPUID
 static APML_DEV_CTL ctl;
+
 int main(int argc , char* argv[])
 {
     int ret=0;
@@ -27,69 +34,68 @@ int main(int argc , char* argv[])
     uint32 reg_val_h, reg_val_l;
     uint32 count=0;
     char c;
+    uint32 reg_addr=0;
+    int bus_id = -1;
+    uint8 simple_flag=0;
+    char buf[255]={0};
 
-    ret = apml_init_fdk(&ctl,0);
+    if(argc <2)
+    {
+        printf("please specify which bus that you want to access!\n");
+        return -1;
+    }
+
+    if(argc >1)
+    {
+        bus_id = strtol(argv[1],NULL,0);
+    }
+
+    if(argc >2)
+    {
+        reg_addr = strtoul(argv[2],NULL,16);
+        simple_flag = 1;
+    }
+
+
+    ret = apml_init_fdk(&ctl,0,bus_id);
     if(ret != 0)
     {
         printf("apml_init_fdk error ret=%d\n",ret);
         return -1;
     }
-
+    printf("dev->busid=%d reg_addr=0x%x\n",ctl.bus_id,reg_addr);
+    
     mkdir("/usr/log",0755);
-    fp = fopen("/usr/log/apml_msr.log","a+");
-
-    //获取当前文件行数
-    while ((c = fgetc(fp)) != EOF) {
-        if (c == '\n') {
-            count++;
-        }
-    }
-
-    //超过设定行阈值，删除文件重新创建新文件
-    if((argc == 1) && ((count + (sizeof(reg_list)/sizeof(uint32))) > LINE_NUM))
-    {
-        fclose(fp);
-        remove("/usr/log/apml_msr.log");
-        fp = fopen("/usr/log/apml_msr.log","a+");
-    }
-
-
 
     //获取当前时间
     time(&timep);
     p=gmtime(&timep);
+
     //存储读取日志
-    if(argc > 1)
+    if(simple_flag)
     {
-        //read simple register value
-        uint32 reg = strtol(argv[1]);
-        if(1+count > LINE_NUM)
-        {
-            fclose(fp);
-            remove("/usr/log/apml_msr.log");
-            fp = fopen("/usr/log/apml_msr.log","a+");
-        }
-        ret = apml_read_msr_value(&ctl,0,&reg_val_h,&reg_val_l,reg,0);
+        ret = apml_read_msr_value(&ctl,0,&reg_val_h,&reg_val_l,reg_addr,bus_id);
         if (ret != APML_SUCCESS) {
-            printf("apml_read_msr_value register:0x%x failed! res=%d\n",reg, ret);
-            fprintf(fp, "%d-%d-%d %d:%d:%d    register:0x%x    status:failed\n",1900+p->tm_year, 1+p->tm_mon, p->tm_mday, 8+p->tm_hour,p->tm_min,p->tm_sec,reg);
+            printf("apml_read_msr_value register:0x%x failed! res=%d\n",reg_addr, ret);
+            sprintf(buf, "%d-%d-%d %d:%d:%d    register:0x%x    status:failed\n",1900+p->tm_year, 1+p->tm_mon, p->tm_mday, 8+p->tm_hour,p->tm_min,p->tm_sec,reg_addr);
         }
-        fprintf(fp, "%d-%d-%d %d:%d:%d    register:0x%x    value:0x%08x%08x\n",1900+p->tm_year, 1+p->tm_mon, p->tm_mday, 8+p->tm_hour,p->tm_min,p->tm_sec,reg,reg_val_h,reg_val_l);
+        else
+            sprintf(buf, "%d-%d-%d %d:%d:%d    register:0x%x    value:0x%08x%08x\n",1900+p->tm_year, 1+p->tm_mon, p->tm_mday, 8+p->tm_hour,p->tm_min,p->tm_sec,reg_addr,reg_val_h,reg_val_l);
+        record_register_log(buf);
     }
     else{
         for(int i=0; i<(sizeof(reg_list)/sizeof(uint32)); i++)
         {
-            ret = apml_read_msr_value(&ctl,0,&reg_val_h,&reg_val_l,reg_list[i],0);
+            ret = apml_read_msr_value(&ctl,0,&reg_val_h,&reg_val_l,reg_list[i],bus_id);
             if (ret != APML_SUCCESS) {
                 printf("apml_read_msr_value  register:0x%x failed! res=%d\n",reg_list[i],ret);
-                fprintf(fp, "%d-%d-%d %d:%d:%d    register:0x%x    status:failed\n",1900+p->tm_year, 1+p->tm_mon, p->tm_mday, 8+p->tm_hour,p->tm_min,p->tm_sec,reg_list[i]);
+                sprintf(buf, "%d-%d-%d %d:%d:%d    register:0x%x    status:failed\n",1900+p->tm_year, 1+p->tm_mon, p->tm_mday, 8+p->tm_hour,p->tm_min,p->tm_sec,reg_list[i]);
             }
-            fprintf(fp, "%d-%d-%d %d:%d:%d    register:0x%x    value:0x%08x%08x\n",1900+p->tm_year, 1+p->tm_mon, p->tm_mday, 8+p->tm_hour,p->tm_min,p->tm_sec,reg_list[i],reg_val_h,reg_val_l);
+            else
+                sprintf(buf, "%d-%d-%d %d:%d:%d    register:0x%x    value:0x%08x%08x\n",1900+p->tm_year, 1+p->tm_mon, p->tm_mday, 8+p->tm_hour,p->tm_min,p->tm_sec,reg_list[i],reg_val_h,reg_val_l);
+            record_register_log(buf);
         }
     }
-    fclose(fp);
-
-
 
 #ifdef READ_CPUID_EN
     uint32 eax_val= 0, ebx_val=0, ecx_val=0, edx_val=0;
@@ -122,4 +128,41 @@ int main(int argc , char* argv[])
 
     ret=apml_close_fdk(&ctl,0);
     return ret;
+}
+
+
+void record_register_log(char * message)
+{
+    FILE *fp = NULL;
+    char fileBuf[LINE_NUM+5][255];
+    memset(fileBuf, 0x00 , sizeof(fileBuf));
+
+    // read login_aduit.log
+    int linenum = 0;
+    if (0 == access(APML_REG_LOG, F_OK))
+    {
+        if ((fp = fopen(APML_REG_LOG, "r")) != NULL)
+        {
+            for(int i = 0; i < LINE_NUM+1 && !feof(fp); ++i)
+            {
+                linenum++;
+                fgets(fileBuf[i], 255, fp);
+            }
+        }
+        fclose(fp);
+    }
+    //printf("current linenum=%d\n",linenum);
+
+    sprintf(fileBuf[LINE_NUM], "%s", message);
+
+    // write login_aduit.log
+    if ((fp = fopen(APML_REG_LOG, "w+")) != NULL)
+    {
+        for(int i = (linenum == (LINE_NUM+1) ? 1 : 0); i < LINE_NUM+1 && !feof(fp); i++)
+        {
+            fprintf(fp, "%s", fileBuf[i]);
+        }
+    }
+    fclose(fp);
+    return;
 }

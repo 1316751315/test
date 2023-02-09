@@ -215,7 +215,7 @@ uint32 apml_block_process_call(
 
 
 /* Initializes the FDK for use */
-uint32 apml_init_fdk(APML_DEV_CTL *ctl,int BMCInst)
+uint32 apml_init_fdk(APML_DEV_CTL *ctl,int BMCInst, int bus_id)
 {
 	uint32	i, j, res;
 
@@ -247,7 +247,8 @@ uint32 apml_init_fdk(APML_DEV_CTL *ctl,int BMCInst)
 	ctl->stat.bytes_xmtd         = 0;
 	ctl->stat.bytes_rcvd         = 0;
 
-	ctl->trace_level = APML_TRACE_ON;
+	ctl->trace_level = APML_TRACE_OFF;
+	ctl->bus_id = bus_id;
 	res = user_platform_init(ctl,BMCInst);
 	ctl->initialized = 1;
 

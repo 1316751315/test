@@ -275,6 +275,7 @@ typedef struct apml_ctl_struct {
 	uint8			trace_level;
 	uint8			debug_level;
 	uint8 			initialized;
+	int             bus_id;
 	APML_PROC_STATS		stat;
 	USER_PLATFORM_DATA	platform;
 } APML_DEV_CTL;
@@ -469,9 +470,10 @@ extern uint32 apml_read_msr_value(
 	uint32 		reg_id,
 	int			BMCInst);
 
-extern uint32 apml_init_fdk(APML_DEV_CTL *ctl,int BMCInst);
+extern uint32 apml_init_fdk(APML_DEV_CTL *ctl,int BMCInst,int bus_id);
 
 extern uint32 apml_close_fdk(APML_DEV_CTL *ctl,int BMCInst);
+
 
 
 
