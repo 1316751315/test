@@ -6,7 +6,7 @@
 #include "Apml_fdk.h"
 #include <time.h>
 #include <sys/stat.h>
-#define LINE_NUM 200
+#define LINE_NUM 2000
 
 #define APML_REG_LOG "/usr/log/apml-msr.log"
 void record_register_log(char * message);
@@ -16,12 +16,7 @@ uint32 reg_list[]={0xc0002001,0xc0002002,0xc0002003,0xc0002011,0xc0002012,0xc000
 0xc0002042,0xc0002043,0xc0002051,0xc0002052,0xc0002053,0xc0002061,0xc0002062,0xc0002063,0xc0002071,0xc0002072,0xc0002073,0xc0002081,0xc0002082,0xc0002083, \
 0xc0002091,0xc0002092,0xc0002093,0xc00020a1,0xc00020a2,0xc00020a3,0xc00020b1,0xc00020b2,0xc00020b3,0xc00020c1,0xc00020c2,0xc00020c3,0xc00020d1,0xc00020d2,0xc00020d3, \
 0xc00020e1,0xc00020e2,0xc00020e3,0xc00020f1,0xc00020f2,0xc00020f3,0xc0002101,0xc0002102,0xc0002103,0xc0002111,0xc0002112,0xc0002113,0xc0002121,0xc0002122,0xc0002123, \
-0xc0002131,0xc0002132,0xc0002133,0xc0002141,0xc0002142,0xc0002143,0xc0002151,0xc0002152,0xc0002153,0xc0002161,0xc0002162,0xc0002163,0xc0002001,0xc0002002,0xc0002003, \
-0xc0002011,0xc0002012,0xc0002013,0xc0002021,0xc0002022,0xc0002023,0xc0002031,0xc0002032,0xc0002033,0xc0002041,0xc0002042,0xc0002043,0xc0002051,0xc0002052,0xc0002053, \
-0xc0002061,0xc0002062,0xc0002063,0xc0002071,0xc0002072,0xc0002073,0xc0002081,0xc0002082,0xc0002083,0xc0002091,0xc0002092,0xc0002093,0xc00020a1,0xc00020a2,0xc00020a3, \
-0xc00020b1,0xc00020b2,0xc00020b3,0xc00020c1,0xc00020c2,0xc00020c3,0xc00020d1,0xc00020d2,0xc00020d3,0xc00020e1,0xc00020e2,0xc00020e3,0xc00020f1,0xc00020f2,0xc00020f3, \
-0xc0002101,0xc0002102,0xc0002103,0xc0002111,0xc0002112,0xc0002113,0xc0002121,0xc0002122,0xc0002123,0xc0002131,0xc0002132,0xc0002133,0xc0002141,0xc0002142,0xc0002143, \
-0xc0002151,0xc0002152,0xc0002153,0xc0002161,0xc0002162,0xc0002163};
+0xc0002131,0xc0002132,0xc0002133,0xc0002141,0xc0002142,0xc0002143,0xc0002151,0xc0002152,0xc0002153,0xc0002161,0xc0002162,0xc0002163};
 //Core-specific read CPUID
 static APML_DEV_CTL ctl;
 
@@ -37,6 +32,7 @@ int main(int argc , char* argv[])
     uint32 reg_addr=0;
     int bus_id = -1;
     uint8 simple_flag=0;
+    int core_id;
     char buf[255]={0};
 
     if(argc <2)
@@ -64,6 +60,9 @@ int main(int argc , char* argv[])
         return -1;
     }
     printf("dev->busid=%d reg_addr=0x%x\n",ctl.bus_id,reg_addr);
+    for(core_id=0; core_id<APML_MAX_PROCS;core_id++){
+        printf("core[%d]=%d\n",core_id,ctl.cores[core_id]);
+    }
     
     mkdir("/usr/log",0755);
 
@@ -74,26 +73,34 @@ int main(int argc , char* argv[])
     //存储读取日志
     if(simple_flag)
     {
-        ret = apml_read_msr_value(&ctl,0,&reg_val_h,&reg_val_l,reg_addr,bus_id);
-        if (ret != APML_SUCCESS) {
-            printf("apml_read_msr_value register:0x%x failed! res=%d\n",reg_addr, ret);
-            sprintf(buf, "%d-%d-%d %d:%d:%d    register:0x%x    status:failed\n",1900+p->tm_year, 1+p->tm_mon, p->tm_mday, 8+p->tm_hour,p->tm_min,p->tm_sec,reg_addr);
-        }
-        else
-            sprintf(buf, "%d-%d-%d %d:%d:%d    register:0x%x    value:0x%08x%08x\n",1900+p->tm_year, 1+p->tm_mon, p->tm_mday, 8+p->tm_hour,p->tm_min,p->tm_sec,reg_addr,reg_val_h,reg_val_l);
-        record_register_log(buf);
-    }
-    else{
-        for(int i=0; i<(sizeof(reg_list)/sizeof(uint32)); i++)
-        {
-            ret = apml_read_msr_value(&ctl,0,&reg_val_h,&reg_val_l,reg_list[i],bus_id);
+        for(core_id=0; core_id<APML_MAX_PROCS;core_id++){
+            if(ctl.cores[core_id] == 0)
+                continue;
+            ret = apml_read_msr_value(&ctl,core_id,&reg_val_h,&reg_val_l,reg_addr,bus_id);
             if (ret != APML_SUCCESS) {
-                printf("apml_read_msr_value  register:0x%x failed! res=%d\n",reg_list[i],ret);
-                sprintf(buf, "%d-%d-%d %d:%d:%d    register:0x%x    status:failed\n",1900+p->tm_year, 1+p->tm_mon, p->tm_mday, 8+p->tm_hour,p->tm_min,p->tm_sec,reg_list[i]);
+                printf("apml_read_msr_value register:0x%x failed! res=%d\n",reg_addr, ret);
+                sprintf(buf, "%d-%d-%d %d:%d:%d    CPU%d    register:0x%x    status:failed\n",1900+p->tm_year, 1+p->tm_mon, p->tm_mday, 8+p->tm_hour,p->tm_min,p->tm_sec,core_id,reg_addr);
             }
             else
-                sprintf(buf, "%d-%d-%d %d:%d:%d    register:0x%x    value:0x%08x%08x\n",1900+p->tm_year, 1+p->tm_mon, p->tm_mday, 8+p->tm_hour,p->tm_min,p->tm_sec,reg_list[i],reg_val_h,reg_val_l);
+                sprintf(buf, "%d-%d-%d %d:%d:%d    CPU%d    register:0x%x    value:0x%08x%08x\n", 1900+p->tm_year, 1+p->tm_mon, p->tm_mday, 8+p->tm_hour,p->tm_min,p->tm_sec,core_id,reg_addr,reg_val_h,reg_val_l);
             record_register_log(buf);
+        }
+    }
+    else{
+        for(core_id=0; core_id<APML_MAX_PROCS;core_id++){
+            if(ctl.cores[core_id] == 0)
+                continue;
+            for(int i=0; i<(sizeof(reg_list)/sizeof(uint32)); i++)
+            {
+                ret = apml_read_msr_value(&ctl,core_id,&reg_val_h,&reg_val_l,reg_list[i],bus_id);
+                if (ret != APML_SUCCESS) {
+                    printf("apml_read_msr_value  register:0x%x failed! res=%d\n",reg_list[i],ret);
+                    sprintf(buf, "%d-%d-%d %d:%d:%d    CPU%d    register:0x%x    status:failed\n",1900+p->tm_year, 1+p->tm_mon, p->tm_mday, 8+p->tm_hour,p->tm_min,p->tm_sec,core_id,reg_list[i]);
+                }
+                else
+                    sprintf(buf, "%d-%d-%d %d:%d:%d    CPU%d    register:0x%x    value:0x%08x%08x\n",1900+p->tm_year, 1+p->tm_mon, p->tm_mday, 8+p->tm_hour,p->tm_min,p->tm_sec,core_id,reg_list[i],reg_val_h,reg_val_l);
+                record_register_log(buf);
+            }
         }
     }
 

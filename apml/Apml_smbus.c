@@ -82,6 +82,4 @@ uint32 apml_smbus_read_byte(char *busname, uint32 addr, uint8 *reg, uint8 *data,
 	close(fd);
 end:
     return ret;
-	
-
 }
